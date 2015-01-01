@@ -53,7 +53,10 @@ def onMove(x, y):
 		adventurer["hp"] -= 0.5
 		return False
 	elif isWater(cell):
-		adventurer["hp"] -= 0.1
+		if isLowWater(cell):
+			adventurer["hp"] -= 0.1
+		elif isDeepWater(cell):
+			adventurer["hp"] = 0
 	elif isSwamp(cell):
 		adventurer["hp"] -= 0.5
 	elif isGold(cell):
@@ -79,6 +82,12 @@ def isRock(cell):
 	
 def isWater(cell):
 	return cell in range(179, 181 +1)
+
+def isLowWater(cell):
+	return cell == 179
+
+def isDeepWater(cell):
+	return cell == 180
 	
 def isGold(cell):
 	return cell == 130
@@ -95,7 +104,28 @@ def isGround(cell):
 	result &= not isSwamp(cell)
 	result &= not isSource(cell)
 	return result
-	
+
+def tryTriggerSpecialEvents():
+	roll = randint(0, 100)
+	if roll <= 30:
+		onFlood()
+	elif roll <= 60:
+		onDrought()
+
+def onFlood():
+	print "Flood begin"
+	for y, row in enumerate(world):
+		for x, cell in enumerate(row):
+			if isSwamp(cell) or isLowWater(cell):
+				setCell(x, y, cell+1)
+
+def onDrought():
+	print "Great drought begin!"
+	for y, row in enumerate(world):
+		for x, cell in enumerate(row):
+			if isDeepWater(cell) or isLowWater(cell):
+				setCell(x, y, cell-1)
+				
 def drawWorld(showHidden):
 	global world
 	print "[hp: ", adventurer["hp"], "][gold: ", adventurer["gold"], "]"
@@ -125,9 +155,10 @@ if __name__ == "__main__":
 	spawnAdventurer()
 
 	userInput = ""
-	print "Adventure begins!\nWrite a letter 'nswe' for move in that direction or 'exit' to leave game."
+	print "Adventure begins!\nWrite a letter 'nswe' to move in that direction or 'exit' to leave game."
 	print "Collect [G]old.\n Use [&] Sources to increase your HP.\nAvoid:\n[#] Rocks\n[~] Water\n[\"] Swamp"
 	while True:	
+		tryTriggerSpecialEvents()
 		drawWorld(True)
 		userInput = raw_input().lower()
 		isAlive = updateAdventurer(userInput)
