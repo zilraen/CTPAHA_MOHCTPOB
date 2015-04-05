@@ -64,7 +64,7 @@ def onMove(x, y):
 		setCell(x, y, getRandomCell())
 	elif isSource(cell):
 		adventurer["hp"] += 1
-		setCell(x, y, getCell(x, y) -1)
+		setCell(x, y, cell-1)
 	
 	if isGround(cell):
 		adventurer["hp"] -= 0.01
